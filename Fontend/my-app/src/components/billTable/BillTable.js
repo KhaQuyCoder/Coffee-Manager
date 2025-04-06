@@ -18,12 +18,14 @@ const BillTable = ({ dataBill }) => {
   const s = useRef(null);
 
   const year = Number(new Date().getFullYear());
+  const yearCurrent = Number(new Date().getFullYear());
   const currentMonth = new Date().toLocaleString("en-US", { month: "long" });
   const { id } = useParams();
+  const nameStaff = sessionStorage.getItem("nameStaff");
 
   useEffect(() => {
     axios
-      .get(`http://localhost:4000/table/${id}`)
+      .get(`https://coffee-manager-api.onrender.com/table/${id}`)
       .then((res) => {
         setDataProduct(res.data.CurrentOrder.items);
         setNumberTable(res.data.NumberTable);
@@ -43,7 +45,7 @@ const BillTable = ({ dataBill }) => {
       idProduct: idP,
     };
     axios
-      .put(`http://localhost:4000/table/quantity/${id}`, req)
+      .put(`https://coffee-manager-api.onrender.com/table/quantity/${id}`, req)
       .then((res) => {
         const updateQuantity = res.data.table.CurrentOrder.items;
 
@@ -60,32 +62,52 @@ const BillTable = ({ dataBill }) => {
   };
   const handleDelProduct = (idp) => {
     axios
-      .delete(`http://localhost:4000/table/${id}`, { data: { idProduct: idp } })
+      .delete(`https://coffee-manager-api.onrender.com/table/${id}`, {
+        data: { idProduct: idp },
+      })
       .then((res) => setDataProduct(res.data.CurrentOrder.items))
       .catch(() => "lỗi xóa sản phẩm");
   };
   const handelMoney = () => {
     return money - totalBill().split(".")[0];
   };
-  const handelPay = (req) => {
+  const handelPay = (req, _id) => {
     if (totalBill() === "0") return;
     setPay(true);
     if (req === "Xác nhận") {
       if (successfull.current) {
         axios
-          .delete(`http://localhost:4000/table/delteALl/${id}`)
+          .delete(
+            `https://coffee-manager-api.onrender.com/table/delteALl/${id}`
+          )
           .then((res) => setDataProduct(res.data.CurrentOrder.items));
         successfull.current.style.transform = "translateX(0)";
         removeValue.current.value = "";
-        axios.post(`http://localhost:4000/revenue/addRevenueDay/${year}`, {
-          revenueDay: {
-            day: new Date().toISOString().split("T")[0].toString(),
-            revenue: Number(totalBill() * 1000),
-          },
-          revenueMonth: {
-            month: currentMonth,
-            revenue: Number(totalBill() * 1000),
-          },
+        axios.post(
+          `https://coffee-manager-api.onrender.com/revenue/addRevenueDay/${year}`,
+          {
+            revenueDay: {
+              day: new Date().toISOString().split("T")[0].toString(),
+              revenue: Number(totalBill() * 1000),
+            },
+            revenueMonth: {
+              month: currentMonth,
+              revenue: Number(totalBill() * 1000),
+            },
+            revenueYear: {
+              year: yearCurrent.toString(),
+              revenue: Number(totalBill() * 1000),
+            },
+          }
+        );
+        axios.post("https://coffee-manager-api.onrender.com/history/add", {
+          id: generateRandomString(),
+          numberTable: numberTable,
+          sumMoney: Number(totalBill() * 1000),
+          time: `[${new Date().toLocaleDateString(
+            "vi-VN"
+          )}]: ${new Date().toLocaleTimeString("vi-VN", { hour12: false })}`,
+          staff: nameStaff,
         });
         sessionStorage.removeItem(numberTable);
       }
@@ -93,6 +115,19 @@ const BillTable = ({ dataBill }) => {
       return;
     }
   };
+  function generateRandomString() {
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const length = Math.floor(Math.random() * 4) + 7;
+    let randomString = "";
+
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      randomString += characters[randomIndex];
+    }
+
+    return randomString;
+  }
   const handelConvertTable = () => {
     setOpa(true);
     convert.current.style.transform = "translateX(0)";

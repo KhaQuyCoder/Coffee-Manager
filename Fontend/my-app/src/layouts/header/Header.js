@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Header.css";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/loggo.jpg";
+import logo from "../../assets/logoStore.png";
 import axios from "axios";
 const Header = () => {
   const id = sessionStorage.getItem("_id");
@@ -9,7 +9,7 @@ const Header = () => {
   const navigate = useNavigate();
   useEffect(() => {
     axios
-      .get(`http://localhost:4000/new/staff/${id}`)
+      .get(`https://coffee-manager-api.onrender.com/new/staff/${id}`)
       .then((res) => setDataStaff(res.data))
       .catch(() => "loi get du lieu");
   }, [id]);

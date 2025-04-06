@@ -3,7 +3,7 @@ import "./Login.css";
 import axios from "axios";
 import bgr from "../../assets/bgr_login.png";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/loggo.jpg";
+import logo from "../../assets/logoStore.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -27,12 +27,17 @@ const Login = () => {
       return;
     }
     try {
-      const res = await axios.post("http://localhost:4000/user/login", user);
+      const res = await axios.post(
+        "https://coffee-manager-api.onrender.com/user/login",
+        user
+      );
 
       if (res.data.token) {
         sessionStorage.setItem("token", res.data.token);
         sessionStorage.setItem("_id", res.data.user.Staff);
         sessionStorage.setItem("Permissions", res.data.user.Role);
+        sessionStorage.setItem("id_user", res.data.user._id);
+
         navigate("/");
       }
     } catch (error) {
